@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { supabase, BUCKET } from '@/lib/supabaseClient';
+import { supabase, BUCKET } from '../lib/supabaseClient';
 
 type FileEntry = {
   path: string; // full path within the bucket, e.g. "part1/page_003.jpg"
