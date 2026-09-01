@@ -1,88 +1,74 @@
 # Joe's Book — sharing site
 
-A simple gallery that reads images straight out of your Supabase Storage
-bucket. No database needed yet — it lists whatever's in the bucket.
+A landing page, a gallery/reader, an author page, and per-page narration —
+all reading from your Supabase Storage bucket. No database needed.
 
-## What you need before starting
+## What's new in this version
 
-- Your Supabase project's **URL** and **anon public key**
-  (Supabase dashboard → your project → Project Settings → API)
-- The exact **name of your bucket** (Storage → the bucket list)
-- A free [GitHub](https://github.com) account
-- A free [Vercel](https://vercel.com) account (sign up with GitHub, one click)
+- **Landing page** (`/`) — title, intro, optional background music, buttons
+  through to the book and the author page.
+- **Reader** (`/read`) — the gallery you had before, now with a narration
+  play/pause button per page when you view it full-screen.
+- **Author page** (`/author`) — a bio, with an optional photo.
+- **Donate link** — shows up in the nav bar and on the landing page, only if
+  you set the env var for it.
 
-## Step 1 — Make sure the bucket is actually public
+## Environment variables
 
-Supabase dashboard → **Storage** → click your bucket → **Configuration** (or
-the bucket's "..." menu) → confirm **Public bucket** is switched on. If it's
-private, images won't load in the gallery without extra signed-URL code.
+Same three as before, plus one new one — set these in Vercel under Project
+Settings → Environment Variables:
 
-## Step 2 — Put this code on GitHub
+| Name | Value |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | your Supabase anon public key |
+| `NEXT_PUBLIC_SUPABASE_BUCKET` | your bucket's exact name |
+| `NEXT_PUBLIC_DONATE_URL` | *(optional)* link to Ko-fi / PayPal.me / Venmo / Cash App |
 
-1. Go to github.com → **New repository** → name it e.g. `joes-book` → Create.
-2. On your computer, unzip this project, then in a terminal inside the folder:
-   ```bash
-   git init
-   git add .
-   git commit -m "Joe's Book site"
-   git branch -M main
-   git remote add origin https://github.com/YOUR-USERNAME/joes-book.git
-   git push -u origin main
-   ```
-   (Replace `YOUR-USERNAME` with your GitHub username. GitHub will show you
-   this exact command on the new repo's page too.)
+Leave `NEXT_PUBLIC_DONATE_URL` unset if you're not ready for a donate link
+yet — it just won't appear anywhere until you add it.
 
-   No terminal handy? GitHub also lets you drag-and-drop the unzipped folder
-   into a new repo from the web UI ("uploading an existing file").
+## Adding audio
 
-## Step 3 — Deploy to Vercel
+All audio lives in the **same bucket** as your photos, under two reserved
+folders that the reader knows to skip when listing pages:
 
-1. Go to [vercel.com/new](https://vercel.com/new) and sign in with GitHub.
-2. Click **Import** next to your `joes-book` repository.
-3. Before clicking Deploy, open **Environment Variables** and add:
-   | Name | Value |
-   |---|---|
-   | `NEXT_PUBLIC_SUPABASE_URL` | your Supabase project URL |
-   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | your Supabase anon public key |
-   | `NEXT_PUBLIC_SUPABASE_BUCKET` | your bucket's exact name |
-4. Click **Deploy**. Wait about a minute.
-5. You'll get a live link like `https://joes-book.vercel.app`.
+- `audio/landing.mp3` — background music for the landing page.
+- `audio/page_012.mp3` — narration for `page_012.jpg`. The filename (minus
+  extension) must match the image's filename exactly. Any page without a
+  matching audio file just won't show a narration button for that page.
 
-## Step 4 — Test it on your phone
+Upload these the same way you uploaded the photos — drag them into the
+bucket via the Supabase dashboard, into an `audio` folder.
 
-Open the `vercel.app` link on your phone's browser. You should see every
-image in your bucket, in a grid, tap-to-enlarge with swipe-through arrows.
+## Adding an author photo
 
-## Step 5 — Share it with your brothers
+Optional. Upload one photo to `site/author.jpg` in the same bucket (again,
+via the Supabase dashboard, into a `site` folder). If it's not there, the
+author page just shows the bio text without a photo — nothing breaks.
 
-Just text or message them the `vercel.app` link. Anyone with the link can
-view it (the bucket is public) — nobody needs an account.
+## Editing the author bio
 
-Want it locked down to just people you invite instead of "anyone with the
-link"? That's a follow-up step (Supabase Auth) — just ask and we'll add it.
+The bio text is plain text in the code, not pulled from Supabase. Open
+`app/author/page.tsx` and edit the two paragraphs directly, then push the
+change the same way you push any other code change (GitHub Desktop → commit
+→ push; Vercel redeploys automatically).
 
-## Adding more photos later
+## Deploying this update
 
-For now, add new photos straight from the Supabase dashboard: Storage →
-your bucket → **Upload files**. The site re-lists the bucket on every page
-load, so refresh the site and new pages show up automatically — no
-redeploy needed.
+Same process as before:
 
-A proper in-site uploader (so you don't have to open Supabase at all) is
-the next thing to build — the `/upload` page is a placeholder for it today.
+1. In GitHub Desktop, make sure it's pointed at your existing `Joe-s-Book`
+   local folder.
+2. Copy all the files from this zip into that folder, overwriting what's
+   there.
+3. GitHub Desktop will show a batch of changes — commit with a message like
+   "add landing page, author page, donate button, narration" and push.
+4. Vercel picks up the push automatically and redeploys within about a
+   minute.
 
-## Organizing pages so they read in order
+## Everything from before still applies
 
-The gallery sorts files by their full path/name. If you upload the two
-halves of the book into separate folders in the bucket (e.g. `part1/` and
-`part2/`), each folder's `page_001.jpg ... page_085.jpg` will sort
-correctly within itself, and folders sort alphabetically too.
-
-## Local development (optional)
-
-```bash
-npm install
-cp .env.local.example .env.local   # fill in your real values
-npm run dev
-```
-Then open http://localhost:3000.
+Bucket must stay public, photos upload the same way, filenames sort
+alphabetically for reading order. See earlier notes for the full original
+setup if you need a refresher.

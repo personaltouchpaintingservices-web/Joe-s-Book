@@ -1,137 +1,76 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { supabase, BUCKET } from '../lib/supabaseClient';
+import { useRef, useState } from 'react';
+import { landingMusicUrl } from '@/lib/supabaseClient';
 
-type FileEntry = {
-  path: string; // full path within the bucket, e.g. "part1/page_003.jpg"
-};
+const DONATE_URL = process.env.NEXT_PUBLIC_DONATE_URL;
 
-const IMAGE_EXT = /\.(jpe?g|png|webp|gif|heic)$/i;
+export default function LandingPage() {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [musicAvailable, setMusicAvailable] = useState(true);
 
-// Supabase's list() only returns one folder level at a time, so we
-// recurse into subfolders to pick up everything, however it's organized.
-async function listAllFiles(prefix = ''): Promise<FileEntry[]> {
-  const { data, error } = await supabase.storage.from(BUCKET).list(prefix, {
-    limit: 1000,
-    sortBy: { column: 'name', order: 'asc' },
-  });
+  const toggleMusic = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
 
-  if (error || !data) return [];
-
-  const results: FileEntry[] = [];
-  for (const entry of data) {
-    const fullPath = prefix ? `${prefix}/${entry.name}` : entry.name;
-    const isFolder = entry.id === null; // Supabase marks folders this way
-    if (isFolder) {
-      const nested = await listAllFiles(fullPath);
-      results.push(...nested);
-    } else if (IMAGE_EXT.test(entry.name)) {
-      results.push({ path: fullPath });
+    if (playing) {
+      audio.pause();
+      setPlaying(false);
+      return;
     }
-  }
-  return results;
-}
 
-export default function Home() {
-  const [files, setFiles] = useState<FileEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-
-  useEffect(() => {
-    async function load() {
-      const all = await listAllFiles();
-      all.sort((a, b) =>
-        a.path.localeCompare(b.path, undefined, { numeric: true, sensitivity: 'base' })
-      );
-      setFiles(all);
-      setLoading(false);
+    if (!audio.src) {
+      audio.src = landingMusicUrl();
     }
-    load();
-  }, []);
-
-  const urlFor = useCallback((path: string) => {
-    return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
-  }, []);
-
-  const close = () => setActiveIndex(null);
-  const prev = () => setActiveIndex((i) => (i === null ? null : Math.max(0, i - 1)));
-  const next = () =>
-    setActiveIndex((i) => (i === null ? null : Math.min(files.length - 1, i + 1)));
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (activeIndex === null) return;
-      if (e.key === 'Escape') close();
-      if (e.key === 'ArrowLeft') prev();
-      if (e.key === 'ArrowRight') next();
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [activeIndex, files.length]);
+    audio
+      .play()
+      .then(() => setPlaying(true))
+      .catch(() => setMusicAvailable(false));
+  };
 
   return (
-    <>
-      <div className="page-head">
-        <div className="eyebrow">The Collection</div>
-        <h1>Joe&rsquo;s Book</h1>
-        <p>Every page, in order, in one place.</p>
+    <div className="landing">
+      <audio
+        ref={audioRef}
+        loop
+        onEnded={() => setPlaying(false)}
+        onError={() => setMusicAvailable(false)}
+      />
+
+      <div className="landing-inner">
+        <div className="eyebrow">A WWF Wrestling Scrapbook</div>
+        <h1 className="landing-title">Joe&rsquo;s Book</h1>
+        <p className="landing-sub">
+          Every page, drawn and written by hand &mdash; now shared for anyone who wants
+          to step back into the golden years of wrestling with us.
+        </p>
+
+        <div className="landing-actions">
+          <a href="/read" className="btn btn-primary">
+            Read the Book
+          </a>
+          <a href="/author" className="btn btn-secondary">
+            About the Author
+          </a>
+          {musicAvailable && (
+            <button className="btn btn-ghost" onClick={toggleMusic}>
+              {playing ? '⏸ Pause Music' : '♪ Play Music'}
+            </button>
+          )}
+        </div>
+
+        {DONATE_URL && (
+          <a
+            href={DONATE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="donate-link"
+          >
+            Support this project
+          </a>
+        )}
       </div>
-
-      {loading && <p>Loading pages&hellip;</p>}
-
-      {!loading && files.length === 0 && (
-        <div className="empty">
-          <p>No pages found in the bucket yet.</p>
-          <p>Add some in your Supabase Storage dashboard, then refresh this page.</p>
-        </div>
-      )}
-
-      {!loading && files.length > 0 && (
-        <div className="grid">
-          {files.map((f, i) => (
-            <div className="card" key={f.path} onClick={() => setActiveIndex(i)}>
-              <img src={urlFor(f.path)} alt={f.path} loading="lazy" />
-              <div className="label">{f.path}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {activeIndex !== null && files[activeIndex] && (
-        <div className="lightbox" onClick={close}>
-          <span className="close" onClick={close}>
-            ✕
-          </span>
-          {activeIndex > 0 && (
-            <span
-              className="nav-btn prev"
-              onClick={(e) => {
-                e.stopPropagation();
-                prev();
-              }}
-            >
-              ‹
-            </span>
-          )}
-          <img
-            src={urlFor(files[activeIndex].path)}
-            alt=""
-            onClick={(e) => e.stopPropagation()}
-          />
-          {activeIndex < files.length - 1 && (
-            <span
-              className="nav-btn next"
-              onClick={(e) => {
-                e.stopPropagation();
-                next();
-              }}
-            >
-              ›
-            </span>
-          )}
-        </div>
-      )}
-    </>
+    </div>
   );
 }

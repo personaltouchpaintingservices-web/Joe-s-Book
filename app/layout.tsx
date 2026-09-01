@@ -1,5 +1,7 @@
 import './globals.css';
 
+const DONATE_URL = process.env.NEXT_PUBLIC_DONATE_URL;
+
 export const metadata = {
   title: "Joe's Book",
   description: 'A shared home for the pages of the book.',
@@ -15,8 +17,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               Joe&rsquo;s Book
             </a>
             <nav>
-              <a href="/">Read</a>
-              <a href="/upload">Upload</a>
+              <a href="/read">Read</a>
+              <a href="/author">Author</a>
+              {DONATE_URL && (
+                <a href={DONATE_URL} target="_blank" rel="noopener noreferrer">
+                  Donate
+                </a>
+              )}
             </nav>
           </header>
           <main>{children}</main>
