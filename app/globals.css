@@ -437,3 +437,69 @@ main {
 .narration-btn:hover {
   border-color: white;
 }
+
+/* Wrestling ring hero */
+.ring-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 40px 20px;
+}
+
+.ring-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.ring-hero .landing-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-logo {
+  width: min(420px, 80vw);
+  height: auto;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.4));
+}
+
+.ring-title {
+  color: #f5f1e6;
+  font-size: 2.3rem;
+}
+
+.ring-sub {
+  color: #dfe3ee;
+}
+
+.ring-btn-secondary {
+  color: #f5f1e6;
+  border-color: rgba(245, 241, 230, 0.5);
+}
+
+.ring-btn-secondary:hover {
+  border-color: #f5f1e6;
+  color: white;
+}
+
+.ring-btn-ghost {
+  color: #dfe3ee;
+  border-color: rgba(223, 227, 238, 0.5);
+}
+
+.ring-btn-ghost:hover {
+  color: white;
+  border-color: white;
+}
+
+.ring-donate-link {
+  color: #c9a227;
+  border-color: rgba(201, 162, 39, 0.5);
+}
+
+.ring-donate-link:hover {
+  color: #e0b93a;
+  border-color: #e0b93a;
+}
