@@ -20,17 +20,19 @@ function RingBackground() {
         </linearGradient>
       </defs>
 
-      <rect x="0" y="0" width="1400" height="900" fill="url(#matGrad)" />
+      {/* mat is inset from the canvas edge so the crowd-texture page
+          background shows through as the "audience" beyond the ropes */}
+      <rect x="60" y="60" width="1280" height="780" fill="url(#matGrad)" />
 
       <rect x="60" y="60" width="1280" height="780" rx="10" fill="none" stroke="#c0392b" strokeWidth="10" />
       <rect x="105" y="105" width="1190" height="690" rx="10" fill="none" stroke="#f5f1e6" strokeWidth="10" />
       <rect x="150" y="150" width="1100" height="600" rx="10" fill="none" stroke="#c9a227" strokeWidth="10" />
 
       <g>
-        <rect x="20" y="20" width="90" height="90" rx="14" fill="#c9a227" stroke="#8f6a22" strokeWidth="4" />
-        <rect x="1290" y="20" width="90" height="90" rx="14" fill="#c9a227" stroke="#8f6a22" strokeWidth="4" />
-        <rect x="20" y="790" width="90" height="90" rx="14" fill="#c9a227" stroke="#8f6a22" strokeWidth="4" />
-        <rect x="1290" y="790" width="90" height="90" rx="14" fill="#c9a227" stroke="#8f6a22" strokeWidth="4" />
+        <rect x="20" y="20" width="90" height="90" rx="14" fill="#a4271f" stroke="#5c140f" strokeWidth="4" />
+        <rect x="1290" y="20" width="90" height="90" rx="14" fill="#a4271f" stroke="#5c140f" strokeWidth="4" />
+        <rect x="20" y="790" width="90" height="90" rx="14" fill="#a4271f" stroke="#5c140f" strokeWidth="4" />
+        <rect x="1290" y="790" width="90" height="90" rx="14" fill="#a4271f" stroke="#5c140f" strokeWidth="4" />
       </g>
     </svg>
   );
@@ -73,11 +75,13 @@ export default function LandingPage() {
 
       <div className="landing-inner">
         <picture>
-          <source srcSet="/images/joe-hero.webp" type="image/webp" />
-          <img src="/images/joe-hero.png" alt="Joe" className="hero-logo" />
+          <source srcSet="/images/joe-full-hero.webp" type="image/webp" />
+          <img
+            src="/images/joe-full-hero.png"
+            alt="Joe's Wrestling Artwork"
+            className="hero-logo hero-logo-full"
+          />
         </picture>
-
-        <h1 className="landing-title ring-title">Joe&rsquo;s Wrestling Artwork</h1>
 
         <p className="landing-sub ring-sub">
           Saying the prayers, Eating the vitamins, and Believing in yourself, brother,
