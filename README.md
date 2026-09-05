@@ -72,3 +72,28 @@ Same process as before:
 Bucket must stay public, photos upload the same way, filenames sort
 alphabetically for reading order. See earlier notes for the full original
 setup if you need a refresher.
+
+## Contact link
+
+Same pattern as Donate: set `NEXT_PUBLIC_CONTACT_URL` in Vercel to your
+Reddit post (or wherever), and a "Contact" link appears in the nav bar
+automatically. Leave it unset to hide it.
+
+## Traffic analytics
+
+Vercel Web Analytics is now wired in (free on the Hobby plan, 50,000
+events/month, no cookie banner needed). One manual step required:
+
+1. In your Vercel dashboard, open this project → the "Analytics" tab.
+2. Click "Enable" (one-time toggle).
+3. Give it a few minutes after your next deploy, then visit the Analytics
+   tab to see page views, visitor counts, top pages, and referrer sources
+   (so you can see how much traffic came from Reddit specifically).
+
+## Known issue: Next.js version
+
+This project runs Next.js 14.2.35 (the latest patch in the 14.x line),
+which has a number of known security advisories fixed only in the 15.x/16.x
+major versions. Upgrading is a breaking change that needs its own dedicated
+testing pass — not something to do in a rush. Worth scheduling as a
+follow-up task rather than ignoring indefinitely.
