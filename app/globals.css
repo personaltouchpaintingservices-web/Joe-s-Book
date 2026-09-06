@@ -686,6 +686,26 @@ main {
 }
 
 @media (max-width: 640px) {
+  .topbar {
+    padding: 14px 16px;
+    flex-wrap: wrap;
+    gap: 8px 0;
+  }
+
+  .brand {
+    font-size: 1.1rem;
+    white-space: nowrap;
+  }
+
+  .topbar nav {
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .topbar nav a {
+    font-size: 0.85rem;
+  }
+
   .ring-hero {
     padding: 24px 12px;
     background-size: 220px auto;
@@ -721,5 +741,84 @@ main {
   .author-photo {
     width: 160px;
     height: 160px;
+  }
+}
+
+/* Contact page */
+.contact-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px 1fr;
+  gap: 32px;
+  align-items: center;
+  max-width: 1000px;
+}
+
+.contact-art {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  border: 3px solid var(--brass);
+  box-shadow: var(--shadow);
+}
+
+.contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.contact-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--paper-dim);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px 18px;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.contact-row:hover {
+  border-color: var(--brass);
+  transform: translateX(2px);
+}
+
+.contact-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.contact-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--brass-dark);
+  font-weight: 600;
+}
+
+.contact-value {
+  color: var(--ink);
+  font-size: 1rem;
+  word-break: break-word;
+}
+
+@media (max-width: 900px) {
+  .contact-layout {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
+
+  .contact-art {
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  .contact-art-2 {
+    order: 3;
   }
 }

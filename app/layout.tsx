@@ -2,7 +2,6 @@ import './globals.css';
 import { Analytics } from '@vercel/analytics/react';
 
 const DONATE_URL = process.env.NEXT_PUBLIC_DONATE_URL;
-const CONTACT_URL = process.env.NEXT_PUBLIC_CONTACT_URL;
 
 export const metadata = {
   title: "Joe's Book",
@@ -21,11 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav>
               <a href="/read">Read</a>
               <a href="/author">Author</a>
-              {CONTACT_URL && (
-                <a href={CONTACT_URL} target="_blank" rel="noopener noreferrer">
-                  Contact
-                </a>
-              )}
+              <a href="/contact">Contact</a>
               {DONATE_URL && (
                 <a href={DONATE_URL} target="_blank" rel="noopener noreferrer">
                   Donate

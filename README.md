@@ -73,11 +73,12 @@ Bucket must stay public, photos upload the same way, filenames sort
 alphabetically for reading order. See earlier notes for the full original
 setup if you need a refresher.
 
-## Contact link
+## Contact page
 
-Same pattern as Donate: set `NEXT_PUBLIC_CONTACT_URL` in Vercel to your
-Reddit post (or wherever), and a "Contact" link appears in the nav bar
-automatically. Leave it unset to hide it.
+`/contact` is a real page now (not a link), listing email, Reddit, and
+Venmo, decorated with a couple of pieces of the book's own art. Edit
+`app/contact/page.tsx` directly to change the email/handles or swap the
+art (any image dropped in `public/images/` and referenced there works).
 
 ## Traffic analytics
 
