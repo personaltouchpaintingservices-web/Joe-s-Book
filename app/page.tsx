@@ -41,7 +41,7 @@ function RingBackground() {
 export default function LandingPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
-  const [musicAvailable, setMusicAvailable] = useState(true);
+  const [musicError, setMusicError] = useState<string | null>(null);
 
   const toggleMusic = () => {
     const audio = audioRef.current;
@@ -53,13 +53,17 @@ export default function LandingPage() {
       return;
     }
 
+    setMusicError(null);
     if (!audio.src) {
       audio.src = landingMusicUrl();
     }
     audio
       .play()
       .then(() => setPlaying(true))
-      .catch(() => setMusicAvailable(false));
+      .catch((err) => {
+        console.error('Music playback failed:', err);
+        setMusicError("Couldn't play right now — try again?");
+      });
   };
 
   return (
@@ -70,7 +74,10 @@ export default function LandingPage() {
         ref={audioRef}
         loop
         onEnded={() => setPlaying(false)}
-        onError={() => setMusicAvailable(false)}
+        onError={(e) => {
+          console.error('Audio failed to load:', e);
+          setMusicError("Couldn't load the audio file — try again?");
+        }}
       />
 
       <div className="landing-inner">
@@ -97,12 +104,12 @@ export default function LandingPage() {
           <a href="/author" className="btn btn-secondary ring-btn-secondary">
             About the Author
           </a>
-          {musicAvailable && (
-            <button className="btn btn-ghost ring-btn-ghost" onClick={toggleMusic}>
-              {playing ? '⏸ Pause Music' : '♪ Play Music'}
-            </button>
-          )}
+          <button className="btn btn-ghost ring-btn-ghost" onClick={toggleMusic}>
+            {playing ? '⏸ Pause Music' : '♪ Play Music'}
+          </button>
         </div>
+
+        {musicError && <p className="music-error">{musicError}</p>}
 
         {DONATE_URL && (
           <a

@@ -7,7 +7,16 @@ type FileEntry = {
   path: string; // full path within the bucket, e.g. "page_003.jpg"
 };
 
+type CommentRow = {
+  id: number;
+  page_path: string;
+  name: string | null;
+  message: string;
+  created_at: string;
+};
+
 const IMAGE_EXT = /\.(jpe?g|png|webp|gif|heic)$/i;
+const MAX_MESSAGE_LEN = 500;
 
 // Supabase's list() only returns one folder level at a time, so we
 // recurse into subfolders to pick up everything, however it's organized.
@@ -36,13 +45,35 @@ async function listAllFiles(prefix = ''): Promise<FileEntry[]> {
   return results;
 }
 
+function timeAgo(iso: string): string {
+  const seconds = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (seconds < 60) return 'just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  return new Date(iso).toLocaleDateString();
+}
+
 export default function ReadPage() {
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
   const [narrationPlaying, setNarrationPlaying] = useState(false);
-  const [narrationAvailable, setNarrationAvailable] = useState(true);
+  const [narrationError, setNarrationError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [comments, setComments] = useState<CommentRow[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [nameInput, setNameInput] = useState('');
+  const [messageInput, setMessageInput] = useState('');
+  const [honeypot, setHoneypot] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -65,19 +96,94 @@ export default function ReadPage() {
     setNarrationPlaying(false);
   }, []);
 
+  const loadComments = useCallback(async (path: string) => {
+    setCommentsLoading(true);
+    const { data, error } = await supabase
+      .from('comments')
+      .select('*')
+      .eq('page_path', path)
+      .order('created_at', { ascending: true });
+    if (!error && data) setComments(data as CommentRow[]);
+    setCommentsLoading(false);
+  }, []);
+
   const close = () => {
     stopNarration();
     setActiveIndex(null);
+    setCommentsOpen(false);
   };
   const prev = () => {
     stopNarration();
-    setNarrationAvailable(true);
+    setNarrationError(null);
+    setCommentsOpen(false);
+    setSubmitError(null);
     setActiveIndex((i) => (i === null ? null : Math.max(0, i - 1)));
   };
   const next = () => {
     stopNarration();
-    setNarrationAvailable(true);
+    setNarrationError(null);
+    setCommentsOpen(false);
+    setSubmitError(null);
     setActiveIndex((i) => (i === null ? null : Math.min(files.length - 1, i + 1)));
+  };
+
+  const openPage = (i: number) => {
+    setActiveIndex(i);
+    setCommentsOpen(false);
+    setSubmitError(null);
+  };
+
+  const toggleComments = () => {
+    const opening = !commentsOpen;
+    setCommentsOpen(opening);
+    if (opening && activeIndex !== null) {
+      loadComments(files[activeIndex].path);
+    }
+  };
+
+  const submitComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (activeIndex === null) return;
+
+    // Honeypot: real visitors never fill this hidden field. If it has a
+    // value, silently pretend success without actually posting anything.
+    if (honeypot.trim() !== '') {
+      setMessageInput('');
+      setNameInput('');
+      return;
+    }
+
+    const trimmed = messageInput.trim();
+    if (!trimmed) {
+      setSubmitError('Comment cannot be empty.');
+      return;
+    }
+    if (trimmed.length > MAX_MESSAGE_LEN) {
+      setSubmitError(`Keep it under ${MAX_MESSAGE_LEN} characters.`);
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitError(null);
+    const { data, error } = await supabase
+      .from('comments')
+      .insert({
+        page_path: files[activeIndex].path,
+        name: nameInput.trim() || 'Anonymous',
+        message: trimmed,
+      })
+      .select()
+      .single();
+
+    setSubmitting(false);
+    if (error) {
+      setSubmitError("Couldn't post that — try again?");
+      return;
+    }
+    if (data) {
+      setComments((prev) => [...prev, data as CommentRow]);
+      setMessageInput('');
+    }
   };
 
   const toggleNarration = () => {
@@ -91,6 +197,7 @@ export default function ReadPage() {
       return;
     }
 
+    setNarrationError(null);
     const src = narrationUrlFor(files[activeIndex].path);
     if (audio.src !== src) {
       audio.src = src;
@@ -98,7 +205,10 @@ export default function ReadPage() {
     audio
       .play()
       .then(() => setNarrationPlaying(true))
-      .catch(() => setNarrationAvailable(false));
+      .catch((err) => {
+        console.error('Narration playback failed:', err);
+        setNarrationError('No narration for this page yet.');
+      });
   };
 
   useEffect(() => {
@@ -133,7 +243,7 @@ export default function ReadPage() {
       {!loading && files.length > 0 && (
         <div className="grid">
           {files.map((f, i) => (
-            <div className="card" key={f.path} onClick={() => setActiveIndex(i)}>
+            <div className="card" key={f.path} onClick={() => openPage(i)}>
               <img src={urlFor(f.path)} alt={f.path} loading="lazy" />
               <div className="label">{f.path}</div>
             </div>
@@ -146,7 +256,10 @@ export default function ReadPage() {
           <audio
             ref={audioRef}
             onEnded={() => setNarrationPlaying(false)}
-            onError={() => setNarrationAvailable(false)}
+            onError={(e) => {
+              console.error('Narration failed to load:', e);
+              setNarrationError('No narration for this page yet.');
+            }}
           />
           <span className="close" onClick={close}>
             ✕
@@ -178,16 +291,85 @@ export default function ReadPage() {
               ›
             </span>
           )}
-          {narrationAvailable && (
+
+          <div className="lightbox-controls" onClick={(e) => e.stopPropagation()}>
             <button
               className={`narration-btn${narrationPlaying ? ' playing' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleNarration();
-              }}
+              onClick={toggleNarration}
             >
               {narrationPlaying ? '⏸ Narration' : '🔊 Narration'}
             </button>
+            <button
+              className={`comments-btn${commentsOpen ? ' open' : ''}`}
+              onClick={toggleComments}
+            >
+              💬 Comments
+            </button>
+          </div>
+          {narrationError && (
+            <p className="narration-error" onClick={(e) => e.stopPropagation()}>
+              {narrationError}
+            </p>
+          )}
+
+          {commentsOpen && (
+            <div className="comments-drawer" onClick={(e) => e.stopPropagation()}>
+              <div className="comments-drawer-header">
+                <span>Comments</span>
+                <span className="comments-drawer-close" onClick={() => setCommentsOpen(false)}>
+                  ✕
+                </span>
+              </div>
+
+              <div className="comments-list">
+                {commentsLoading && <p className="comments-empty">Loading&hellip;</p>}
+                {!commentsLoading && comments.length === 0 && (
+                  <p className="comments-empty">No comments yet — be the first!</p>
+                )}
+                {!commentsLoading &&
+                  comments.map((c) => (
+                    <div className="comment-item" key={c.id}>
+                      <div className="comment-meta">
+                        <span className="comment-name">{c.name || 'Anonymous'}</span>
+                        <span className="comment-time">{timeAgo(c.created_at)}</span>
+                      </div>
+                      <p className="comment-message">{c.message}</p>
+                    </div>
+                  ))}
+              </div>
+
+              <form className="comments-form" onSubmit={submitComment}>
+                {/* Honeypot field: hidden from real visitors via CSS, bots that
+                    auto-fill every field will trip it and get silently ignored. */}
+                <input
+                  type="text"
+                  name="website"
+                  className="honeypot"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Name (optional)"
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  maxLength={60}
+                />
+                <textarea
+                  placeholder="Leave a comment on this page..."
+                  value={messageInput}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  maxLength={MAX_MESSAGE_LEN}
+                  rows={3}
+                />
+                {submitError && <p className="comment-submit-error">{submitError}</p>}
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                  {submitting ? 'Posting...' : 'Post Comment'}
+                </button>
+              </form>
+            </div>
           )}
         </div>
       )}
