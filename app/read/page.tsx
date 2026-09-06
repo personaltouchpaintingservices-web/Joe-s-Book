@@ -201,6 +201,7 @@ export default function ReadPage() {
     const src = narrationUrlFor(files[activeIndex].path);
     if (audio.src !== src) {
       audio.src = src;
+      audio.load();
     }
     audio
       .play()

@@ -56,6 +56,7 @@ export default function LandingPage() {
     setMusicError(null);
     if (!audio.src) {
       audio.src = landingMusicUrl();
+      audio.load();
     }
     audio
       .play()

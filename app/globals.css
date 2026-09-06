@@ -384,33 +384,69 @@ main {
 }
 
 /* Author page */
-.author-layout {
-  display: flex;
-  gap: 32px;
-  flex-wrap: wrap;
-  align-items: flex-start;
+.author-story {
+  max-width: 720px;
 }
 
-.author-photo {
-  width: 220px;
-  height: 220px;
-  object-fit: cover;
-  border-radius: 12px;
-  border: 1px solid var(--line);
+.author-banner {
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  border: 3px solid var(--brass);
   box-shadow: var(--shadow);
-  flex-shrink: 0;
+  margin-bottom: 36px;
+  display: block;
 }
 
-.author-bio {
-  flex: 1;
-  min-width: 260px;
-  font-size: 1.02rem;
-  line-height: 1.7;
+.author-story-body {
+  font-size: 1.05rem;
+  line-height: 1.8;
   color: var(--ink);
 }
 
-.author-bio p {
-  margin: 0 0 16px;
+.author-story-body p {
+  margin: 0 0 20px;
+}
+
+.author-photo {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid var(--brass);
+  box-shadow: var(--shadow);
+  float: left;
+  margin: 0 20px 12px 0;
+}
+
+.author-accent {
+  width: 280px;
+  height: auto;
+  border-radius: 12px;
+  border: 3px solid var(--brass);
+  box-shadow: var(--shadow);
+  float: right;
+  margin: 4px 0 20px 24px;
+  display: block;
+}
+
+.author-closing {
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--brass);
+  border-left: 3px solid var(--brass);
+  padding-left: 18px;
+  margin: 32px 0 24px !important;
+  clear: both;
+}
+
+.author-signature {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.7rem;
+  font-weight: 600;
+  text-align: right;
+  color: var(--ink);
+  margin-top: 8px !important;
 }
 
 /* Controls bar in the lightbox (narration + comments buttons) */
@@ -732,15 +768,28 @@ main {
     width: min(420px, 94vw);
   }
 
-  .author-layout {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+  .author-story-body {
+    font-size: 0.98rem;
   }
 
   .author-photo {
-    width: 160px;
-    height: 160px;
+    width: 100px;
+    height: 100px;
+    float: none;
+    margin: 0 auto 16px;
+    display: block;
+  }
+
+  .author-accent {
+    width: 100%;
+    max-width: 280px;
+    float: none;
+    margin: 16px auto;
+    display: block;
+  }
+
+  .author-signature {
+    font-size: 1.4rem;
   }
 }
 
